@@ -13,6 +13,10 @@ Chaque premier du mois (ou les jous suivant si le DCA n'a pas été fait le prem
 Le DCA s'effectue via un échangeur décentralisé (Parswap, uniswap ...) une fois le swap réalisé les sous vont sur le smart contract et la balance des déposants est mise à jour.
 
 
+## Architecure
+
+![](schema/DCA_decentralise.png)
+
 ## que peut faire le dépositor ?
 
 ### faire un dépot
@@ -35,6 +39,8 @@ Un déposant peut faire un retrait à tout moment, à partir du moment où il a 
 ## figure imposée le stacking.
 
 On pourrait imaginer que pendant que l'argent dors (les 27/28/29/30 autres jours du mois) on place les USDC sur un protocole pour avoir du rendement suplémentaire. 
+
+
 
 
 
