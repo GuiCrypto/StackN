@@ -12,7 +12,7 @@ Chaque premier du mois (ou les jours suivants si le DCA n'a pas été fait le pr
 
 ## Architecure
 
-![](schema/DCA_decentralise.png)
+![](https://raw.githubusercontent.com/GuiCrypto/StackN/main/schema/DCA_decentralise.png)
 
 ## que peut faire le dépositor ?
 
