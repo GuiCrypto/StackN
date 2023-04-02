@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
+import "https://github.com/bokkypoobah/BokkyPooBahsDateTimeLibrary/blob/master/contracts/BokkyPooBahsDateTimeLibrary.sol";
+
 interface IERC20 {
     function allowance(address owner, address spender) external view returns (uint256);
     function approve(address spender, uint256 amount) external returns (bool);
@@ -69,25 +71,21 @@ contract StackNDCA {
     event dcaValueEvent(uint);
 
     constructor() {
-        lastExecutionTime = 0;
-        functionExecuted = false;
+        //lastExecutionTime = BokkyPooBahsDateTimeLibrary.subMonths(block.timestamp, 1);
+        lastExecutionTime = BokkyPooBahsDateTimeLibrary.subMinutes(block.timestamp, 1);
     }
 
     modifier onlyOncePerMinute() {
-        uint256 today = block.timestamp;
-        uint256 timeSinceLastExecution = today - lastExecutionTime;
-        require(timeSinceLastExecution >= 1 minutes, "This function can only be called once per minute.");
-        lastExecutionTime = today;
+        uint nowTimestamp = block.timestamp;
+        require(BokkyPooBahsDateTimeLibrary.diffMinutes(lastExecutionTime, nowTimestamp) >= 1, "This function can only be called once each minutes");
+        lastExecutionTime = nowTimestamp;
         _;
     }
 
     modifier onlyOncePerMonth() {
-        uint256 today = block.timestamp;
-        uint256 thisMonth = getMonth(today);// add last  month
-        require(thisMonth > lastExecutionTime, "This function can only be called once per month.");
-        require(!functionExecuted, "This function has already been executed this month.");
-        lastExecutionTime = thisMonth;
-        functionExecuted = true;
+        uint nowTimestamp = block.timestamp;
+        require(BokkyPooBahsDateTimeLibrary.diffMonths(lastExecutionTime, nowTimestamp) >= 1, "This function can only be called once each month");
+        lastExecutionTime = nowTimestamp;
         _;
     }
 
@@ -101,8 +99,21 @@ contract StackNDCA {
     }
 
     function getMonth(uint256 timestamp) public pure returns (uint256) {
-        return (timestamp / 1 days / 30) + 1;
+        return BokkyPooBahsDateTimeLibrary.getMonth(timestamp);
     }
+
+    function addMonths(uint _timestamp, uint _months) public pure returns(uint) {
+        return BokkyPooBahsDateTimeLibrary.addMonths(_timestamp, _months);
+    }
+
+    function subMonths(uint _timestamp, uint _months) public pure returns(uint) {
+        return BokkyPooBahsDateTimeLibrary.subMonths(_timestamp, _months);
+    }
+
+    function diffMonths(uint fromTimestamp, uint toTimestamp) public pure returns (uint _months) {
+        return BokkyPooBahsDateTimeLibrary.diffMonths(fromTimestamp, toTimestamp);
+    }
+
 
     function dcaUsersLength() public view returns(uint256) {
         return dcaUsers.length;
