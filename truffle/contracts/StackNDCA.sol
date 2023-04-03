@@ -37,16 +37,16 @@ interface IWETH {
 
 
 contract StackNDCA {
-    ISwapRouter public constant swapRouter = ISwapRouter(0xE592427A0AEce92De3Edee1F18E0157C05861564);
+    ISwapRouter constant swapRouter = ISwapRouter(0xE592427A0AEce92De3Edee1F18E0157C05861564);
 
-    address public usdcSmartContractAddress=0x07865c6E87B9F70255377e024ace6630C1Eaa37F;  //goerli
-    address public weth9SmartContractAddress=0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6; // goerli
+    address usdcSmartContractAddress=0x07865c6E87B9F70255377e024ace6630C1Eaa37F;  //goerli
+    address weth9SmartContractAddress=0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6; // goerli
 
-    uint24 public constant poolFee = 3000;
-    uint256 public udscDcaValue;
+    uint24 constant poolFee = 3000;
+    uint256 udscDcaValue;
 
-    uint256 public lastExecutionTime;
-    bool public functionExecuted;
+    uint256 lastExecutionTime;
+    bool functionExecuted;
 
     
     struct userAccount {
@@ -55,20 +55,17 @@ contract StackNDCA {
         uint256 ethAmount;
     }
 
-    mapping (address => userAccount) public userAccounts; // TODO put it private
+    mapping (address => userAccount) private userAccounts;
     
-    address[] public dcaUsers; // todo put it private
+    address[] dcaUsers; // todo put it private
 
-    event DepositUsdc(address indexed user, uint256 amount);
-    event WithdrawUsdc(address indexed user, uint256 amount);
+    event UserDepositUsdc(address indexed user, uint256 amount);
+    event UserWithdrawUsdc(address indexed user, uint256 amount);
+    event UserWithdrawEth(address indexed user, uint256 amount);
+    event UserDcaAmount(address indexed user, uint256 amount);
+    event usdcValueToSwap(uint);
+    event wethValueSwaped(uint);
 
-    event weth09DcaAmount(uint256 value);
-    event usdcAccountDown(address indexed user, uint256 amount);
-    event weth09AccountUp(address indexed user, uint256 amount);    
-
-    event ratioComputation(address indexed user, uint256 weth09DcaValue, uint256 usdcAmount, uint256 ethAmount, uint256 ethRatioValue);
-    event dcaUsersEvent(address[] dcaUsers);
-    event dcaValueEvent(uint);
 
     constructor() {
         //lastExecutionTime = BokkyPooBahsDateTimeLibrary.subMonths(block.timestamp, 1);
@@ -89,49 +86,29 @@ contract StackNDCA {
         _;
     }
 
-    function getBlockTimestamp() public view returns(uint) {
-        return block.timestamp;
+    modifier checkPoolIsFUll() {
+        if (userAccounts[msg.sender].usdcDCA == 0) {
+            require(dcaUsers.length + 1 < 3, "dca pool is full");
+        }
+        _;
     }
 
-    function getBlockSuperiorThan1Minutes(uint _today, uint _timestamp) public pure returns(bool) {
-        uint256 timeSinceLastExecution =  _today - _timestamp;
-        return timeSinceLastExecution >= 1 minutes;
-    }
-
-    function getMonth(uint256 timestamp) public pure returns (uint256) {
-        return BokkyPooBahsDateTimeLibrary.getMonth(timestamp);
-    }
-
-    function addMonths(uint _timestamp, uint _months) public pure returns(uint) {
-        return BokkyPooBahsDateTimeLibrary.addMonths(_timestamp, _months);
-    }
-
-    function subMonths(uint _timestamp, uint _months) public pure returns(uint) {
-        return BokkyPooBahsDateTimeLibrary.subMonths(_timestamp, _months);
-    }
-
-    function diffMonths(uint fromTimestamp, uint toTimestamp) public pure returns (uint _months) {
-        return BokkyPooBahsDateTimeLibrary.diffMonths(fromTimestamp, toTimestamp);
-    }
-
-
-    function dcaUsersLength() public view returns(uint256) {
-        return dcaUsers.length;
-    }
-
-    function myUsdcBalance() public view returns (uint256) {
-        return userAccounts[msg.sender].usdcAmount;
-    }
-
-    function myEthBalance() public view returns (uint256) {
-        return userAccounts[msg.sender].ethAmount;
-    }
-
-    function depositUsdc(uint256 amountIn) public {
-        require(amountIn >= 100000000);
+    function depositUsdc(uint256 amountIn) public checkPoolIsFUll {
+        require(amountIn >= 100000000, "minimum deposit is 100 usdc");
         IERC20(usdcSmartContractAddress).transferFrom(msg.sender, address(this), amountIn);
         userAccounts[msg.sender].usdcAmount += amountIn;
-        emit DepositUsdc(msg.sender, amountIn);
+        emit UserDepositUsdc(msg.sender, amountIn);
+    }
+
+    function dcaAmount(uint256 amountIn) public checkPoolIsFUll {
+        require(userAccounts[msg.sender].usdcAmount>0, "you have ;no monney in dca pool");
+        require(amountIn>10000000, "minimum dca is 10 usdc");
+        require(userAccounts[msg.sender].usdcAmount>=amountIn);
+        if (userAccounts[msg.sender].usdcDCA == 0) {
+            dcaUsers.push(msg.sender);
+        }
+        userAccounts[msg.sender].usdcDCA = amountIn;
+        emit UserDcaAmount(msg.sender, amountIn);
     }
 
     function widthdrawUsdc() public {
@@ -140,7 +117,7 @@ contract StackNDCA {
         userAccounts[msg.sender].usdcAmount = 0;
         userAccounts[msg.sender].usdcDCA = 0;
         IERC20(usdcSmartContractAddress).transfer(msg.sender, amountOu);
-        emit WithdrawUsdc(msg.sender, amountOu);
+        emit UserWithdrawUsdc(msg.sender, amountOu);
     }
 
     function widthdrawEth() public {
@@ -151,35 +128,10 @@ contract StackNDCA {
         IWETH(weth9SmartContractAddress).withdraw(amountOu);
         (bool success, ) = msg.sender.call{value: amountOu}("");
         require(success, "Transfer failed.");
-
+        emit UserWithdrawEth(msg.sender, amountOu);
     }
 
-    function widthdrawEthApprove(uint256 amountOu) public {
-        IERC20(weth9SmartContractAddress).approve(address(this), amountOu);
-    }
-
-    function widthdrawEthWidthdrawWeth09(uint256 amountOu) public {
-        IWETH(weth9SmartContractAddress).withdraw(amountOu);
-    }
-
-    function widthdrawEthIEht(uint256 amountOu) public {
-        (bool success, ) = msg.sender.call{value: amountOu}("");
-        require(success, "Transfer failed.");
-    }
-
-    function dcaAmount(uint256 amountIn) public {
-        // todo ajouter  un require doit avoir des sous, ne peut pas etre mis a zero
-                // TODO verify usage
-        if (userAccounts[msg.sender].usdcDCA == 0) {
-            dcaUsers.push(msg.sender);
-        }
-
-        userAccounts[msg.sender].usdcDCA = amountIn;
-
-    }
-
-
-    function getDcaValue() public { // TODO put it internal
+    function getDcaValue() private { 
         address[] memory dcaUsersArray = new address[](dcaUsers.length);
         uint dcaUsersArrayIndex = 0;
         udscDcaValue=0;
@@ -187,7 +139,6 @@ contract StackNDCA {
             address user = dcaUsers[i];
             if (userAccounts[user].usdcDCA > 0 && userAccounts[user].usdcAmount >= userAccounts[user].usdcDCA) {
                 userAccounts[user].usdcAmount -= userAccounts[user].usdcDCA;
-                emit usdcAccountDown(user, userAccounts[user].usdcDCA);
                 udscDcaValue += userAccounts[user].usdcDCA;
                 dcaUsersArray[dcaUsersArrayIndex] = user;
                 dcaUsersArrayIndex++;
@@ -203,18 +154,12 @@ contract StackNDCA {
                 mstore(dcaUsersArray, dcaUsersArrayIndex)
             }
         }
-        emit dcaUsersEvent(dcaUsers);
-        emit dcaUsersEvent(dcaUsersArray);
         
         dcaUsers = dcaUsersArray;
-        emit dcaValueEvent(udscDcaValue);
-
-
-
-        //return udscDcaValue;
+        emit usdcValueToSwap(udscDcaValue);
     }
 
-    function swapExactInputEth(uint256 amountIn) public {
+    function swapExactInputEth(uint256 amountIn) private {
  
         // autoriser uniswap à utiliser nos tokens
         IERC20(usdcSmartContractAddress).approve(address(swapRouter), amountIn);
@@ -236,26 +181,20 @@ contract StackNDCA {
         swapRouter.exactInputSingle(params);
     }
 
-    function getWethContractBalance() public view returns (uint256) {
-        return IERC20(weth9SmartContractAddress).balanceOf(address(this));
-    }
 
-    function getUsdcContractBalance() public view returns (uint256) {
-        return IERC20(usdcSmartContractAddress).balanceOf(address(this));
-    }
-
-    function splitWethBalancetoUsers(uint _usdcdcaValue, uint _weth09DcaValue) public {
+    function splitWethBalancetoUsers(uint _usdcdcaValue, uint _weth09DcaValue) private {
         for (uint i = 0; i < dcaUsers.length; i++) {
             address user = dcaUsers[i];
             if (userAccounts[user].usdcDCA > 0) {
                 uint weth09Amount = _weth09DcaValue * userAccounts[user].usdcDCA / _usdcdcaValue;
-                emit ratioComputation(user, _weth09DcaValue, userAccounts[user].usdcDCA, _usdcdcaValue, weth09Amount);
                 userAccounts[user].ethAmount += weth09Amount;
-                emit weth09AccountUp(user, weth09Amount);
             }
         }
     }
 
+    function getWethContractBalance() private view returns (uint256) {
+        return IERC20(weth9SmartContractAddress).balanceOf(address(this));
+    }
 
     function makeDCA() public onlyOncePerMinute {
 
@@ -269,16 +208,23 @@ contract StackNDCA {
 
         // recompute weth09 balance to make weth09 distribution
         weth09DcaValue = getWethContractBalance() - weth09DcaValue;
-        emit weth09DcaAmount(weth09DcaValue);
+        emit wethValueSwaped(weth09DcaValue);
         
         // split weth balance to dca users
         splitWethBalancetoUsers(udscDcaValue, weth09DcaValue);
     }
 
-    receive() external payable {
-
+    function getMyUsdcBalance() public view returns (uint) {
+        return userAccounts[msg.sender].usdcAmount;
     }
-// TODO LIST
-// mettre un compteur d'utilisateurs
-// mettre un require quand le nombre d'utilisateurs est trop bas pour pas lancer l'excution du make dca
+
+    function getMyEthBalance() public view returns (uint) {
+        return userAccounts[msg.sender].ethAmount;
+    }
+
+    function getMyUsdcDca() public view returns (uint) {
+        return userAccounts[msg.sender].usdcDCA;
+    }
+
+    receive() external payable {}
 }
