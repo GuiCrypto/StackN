@@ -46,7 +46,6 @@ const widthdrawEthBalance = async () => {
     // getter config
     const makeDca = async () => {
         const value = await contract.methods.makeDCA().send({ from: accounts[0] });
-        // setMakeDcaFromContract(value);
         };
 
     const sendApprove = async (e) => {
@@ -301,36 +300,7 @@ const widthdrawEthBalance = async () => {
       <br />
       <p>You are connected with this address: {accounts}</p>
       <br />
-      <h2>Balances</h2>
-        <div>
-        <button onClick={usdcBalance}>my usdc balances</button>
-        {readIntegerFromContract}
-        </div>
-        
-        <div>
-        <button onClick={ethBalance}>my eth balance</button>
-        {readEthDcaFromContract}
-        </div>
-        
-        <div>
-        <button onClick={usdcDca}>my monthly dca</button>
-        {readUsdcDcaFromContract}
-        </div>
-
-      <h2>Withdraw</h2>
-        <div>
-        <button onClick={widthdrawUsdcBalance}>widthdraw usdc</button>
-        </div>
-
-        <div>
-        <button onClick={widthdrawEthBalance}>widthdraw eth</button>
-        </div>
-        
-      <h2>Launch Dollar Cost Average</h2>
-      <div>
-        <button onClick={makeDca}>make dca</button>
-        {/* {readMakeDcaFromContract} */}
-        </div>
+      
       <h2>How to make your Dollar Cost Average ?</h2>
         <p>1. Authorize Stack N to make a withdrawal from your account.</p>
         <div>
@@ -369,6 +339,43 @@ const widthdrawEthBalance = async () => {
             <button onClick={sendDcaAmount}>monthly usdc DCA</button>
             </div>
         <p>3. Wait for the next month</p>
+
+    <h2>Launch Dollar Cost Average</h2>
+      <div>
+        <br/>
+        <button onClick={makeDca}>make dca</button>
+        <br/>
+        </div>
+
+        <br/>
+        <br/>
+        <h2>Balances</h2>
+        <div>
+        <button onClick={usdcBalance}>my usdc balances</button>
+        {readIntegerFromContract}
+        </div>
+        
+        <div>
+        <button onClick={ethBalance}>my eth balance</button>
+        {readEthDcaFromContract}
+        </div>
+        
+        <div>
+        <button onClick={usdcDca}>my monthly dca</button>
+        {readUsdcDcaFromContract}
+        </div>
+        <br/>
+        <br/>
+      <h2>Withdraw</h2>
+        <div>
+        <button onClick={widthdrawUsdcBalance}>widthdraw usdc</button>
+        </div>
+
+        <div>
+        <button onClick={widthdrawEthBalance}>widthdraw eth</button>
+        </div>
+        
+
     </div>
   );
 };
