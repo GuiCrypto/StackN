@@ -46,7 +46,7 @@ const widthdrawEthBalance = async () => {
     // getter config
     const makeDca = async () => {
         const value = await contract.methods.makeDCA().send({ from: accounts[0] });
-        setMakeDcaFromContract(value);
+        // setMakeDcaFromContract(value);
         };
 
     const sendApprove = async (e) => {
