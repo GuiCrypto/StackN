@@ -3,19 +3,15 @@ import Intro from "./components/Intro/";
 import Setup from "./components/Setup";
 import Demo from "./components/Demo";
 import Footer from "./components/Footer";
+import Storeguilhain from "./components/Storeguilhain";
+import StackenDCA from "./components/StackenDCA";
 
 function App() {
   return (
     <EthProvider>
       <div id="App">
         <div className="container">
-          <Intro />
-          <hr />
-          <Setup />
-          <hr />
-          <Demo />
-          <hr />
-          <Footer />
+          <StackenDCA />
         </div>
       </div>
     </EthProvider>
