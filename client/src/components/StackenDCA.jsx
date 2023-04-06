@@ -310,7 +310,7 @@ const widthdrawEthBalance = async () => {
             <label>
             <input
                 type="text"
-                placeholder="integer"
+                placeholder="Usdc amount to approve"
                 value={readApproveAmount}
                 onChange={approveHandleInputChange}
             />
@@ -322,7 +322,7 @@ const widthdrawEthBalance = async () => {
             <label>
             <input
                 type="text"
-                placeholder="integer"
+                placeholder="Usdc amount to deposit on your stackN account"
                 value={readDepositUsdcAmount}
                 onChange={depositHandleInputChange}
             />
@@ -334,7 +334,7 @@ const widthdrawEthBalance = async () => {
             <label>
             <input
                 type="text"
-                placeholder="integer"
+                placeholder="Usdc amount to swap each month"
                 value={readDcaAmount}
                 onChange={handleInputChange}
             />
