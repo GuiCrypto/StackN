@@ -13,10 +13,12 @@ const StackNDCA = () => {
   const [readEthDcaFromContract, setEthDcaFromContract] = useState("");
   const [readDcaAmount, setDcaAmount] = useState("");
 
+  const usdcMultiplier = 1000000;
+  const ethMultiplier = 1000000000000000000;
 
   // getter config
   const usdcBalance = async () => {
-    const value = await contract.methods.getMyUsdcBalance().call({ from: accounts[0] });
+    const value = await contract.methods.getMyUsdcBalance().call({ from: accounts[0] }) / usdcMultiplier;
     setIntegerFromContract(value);
 
 };
@@ -28,13 +30,13 @@ const StackNDCA = () => {
 
 // getter config
 const usdcDca = async () => {
-    const value = await contract.methods.getMyUsdcDca().call({ from: accounts[0] });
+    const value = await contract.methods.getMyUsdcDca().call({ from: accounts[0] }) / usdcMultiplier;
     setUsdcDcaFromContract(value);
     };
 
     // getter config
 const ethBalance = async () => {
-    const value = await contract.methods.getMyEthBalance().call({ from: accounts[0] });
+    const value = await contract.methods.getMyEthBalance().call({ from: accounts[0] }) / ethMultiplier;
     setEthDcaFromContract(value);
     };
 
@@ -242,14 +244,15 @@ const widthdrawEthBalance = async () => {
                 }
             ];
             const usdcAddress = await contract.methods.usdcSmartContractAddress().call({ from: accounts[0] });
-            console.log("usdcAddress", usdcAddress)
             const  usdcContract  =  new  web3.eth.Contract(erc20abi, usdcAddress);
-            await usdcContract.methods.approve(contract?._address, readApproveAmount).send({ from: accounts[0]});  
+            const newValue = parseInt(readApproveAmount * usdcMultiplier);
+            await usdcContract.methods.approve(contract?._address, newValue).send({ from: accounts[0]});  
         };
 
         // Setter config
         const approveHandleInputChange = (e) => {
-            if (/^\d+$|^$/.test(e.target.value)) {
+            //if (/^\d+$|^$/.test(e.target.value)) {
+            if (/^(\d+(\.\d*)?|\.\d+)$|^$/.test(e.target.value)) {
                 setApproveAmount(e.target.value);
             }
         };
@@ -262,14 +265,14 @@ const widthdrawEthBalance = async () => {
               alert("Please enter a integer value to write.");
               return;
             }
-            const newValue = parseInt(readDepositUsdcAmount);
+            const newValue = parseInt(readDepositUsdcAmount * usdcMultiplier);
             await contract.methods.depositUsdc(newValue).send({ from: accounts[0] });
           };
 
 
         // Setter config
         const depositHandleInputChange = (e) => {
-            if (/^\d+$|^$/.test(e.target.value)) {
+            if (/^(\d+(\.\d*)?|\.\d+)$|^$/.test(e.target.value)) {
                 setDepositUsdcAmount(e.target.value);
             }
         };
@@ -283,13 +286,13 @@ const widthdrawEthBalance = async () => {
           alert("Please enter a integer value to write.");
           return;
         }
-        const newValue = parseInt(readDcaAmount);
+        const newValue = parseInt(readDcaAmount * usdcMultiplier);
         await contract.methods.dcaAmount(newValue).send({ from: accounts[0] });
       };
 
     // Setter config
     const handleInputChange = (e) => {
-        if (/^\d+$|^$/.test(e.target.value)) {
+        if (/^(\d+(\.\d*)?|\.\d+)$|^$/.test(e.target.value)) {
         setDcaAmount(e.target.value);
         }
     };
