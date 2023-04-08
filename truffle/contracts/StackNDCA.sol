@@ -1,7 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import "https://github.com/bokkypoobah/BokkyPooBahsDateTimeLibrary/blob/master/contracts/BokkyPooBahsDateTimeLibrary.sol";
+//import "https://github.com/bokkypoobah/BokkyPooBahsDateTimeLibrary/blob/master/contracts/BokkyPooBahsDateTimeLibrary.sol";
+import "./BokkyPooBahsDateTimeLibrary.sol";
+import "../node_modules/@openzeppelin/contracts/access/Ownable.sol";
 
 interface IERC20 {
     function allowance(address owner, address spender) external view returns (uint256);
@@ -36,36 +38,46 @@ interface IWETH {
 }
 
 
-contract StackNDCA {
+interface StackNTocken {
+    function mintStackN(address _account, uint _amount) external;
+}
+
+contract StackNDCA is Ownable {
     ISwapRouter constant swapRouter = ISwapRouter(0xE592427A0AEce92De3Edee1F18E0157C05861564);
 
-    address usdcSmartContractAddress=0x07865c6E87B9F70255377e024ace6630C1Eaa37F;  //goerli
-    address weth9SmartContractAddress=0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6; // goerli
+    address public usdcSmartContractAddress=0x07865c6E87B9F70255377e024ace6630C1Eaa37F;  //goerli
+    address public weth9SmartContractAddress=0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6; // goerli
+    address public stackNTockenSmartContractAddress;
+
+    uint stackNMonthlyMint = 2000000000000000000000;
 
     uint24 constant poolFee = 3000;
-    uint256 udscDcaValue;
+    uint256 public usdcStackValue; // TODO private
+    uint256 public usdcDcaValue; // TODO private
 
-    uint256 lastExecutionTime;
-    bool functionExecuted;
-
+    uint256 public lastExecutionTime;
     
     struct userAccount {
         uint256 usdcAmount;
         uint256 usdcDCA;
         uint256 ethAmount;
+        uint256 stackNAmount;
+        uint256 usdcStackAmount;
+        uint256 previousMonthUsdcDcaAmount;
     }
 
-    mapping (address => userAccount) private userAccounts;
+    mapping (address => userAccount) public userAccounts; //todo private
     
-    address[] dcaUsers; // todo put it private
-
+    address[] dcaUsers;
+    
     event UserDepositUsdc(address indexed user, uint256 amount);
     event UserWithdrawUsdc(address indexed user, uint256 amount);
     event UserWithdrawEth(address indexed user, uint256 amount);
+    event UserWithdrawStackN(address indexed user, uint256 amount);
     event UserDcaAmount(address indexed user, uint256 amount);
-    event usdcValueToSwap(uint);
-    event wethValueSwaped(uint);
-
+    event usdcValueToSwap(uint usdcValue);
+    event usdcValueToStack(uint usdcValue);
+    event wethValueSwaped(uint wethValue);
 
     constructor() {
         //lastExecutionTime = BokkyPooBahsDateTimeLibrary.subMonths(block.timestamp, 1);
@@ -88,12 +100,12 @@ contract StackNDCA {
 
     modifier checkPoolIsFUll() {
         if (userAccounts[msg.sender].usdcDCA == 0) {
-            require(dcaUsers.length + 1 < 3, "dca pool is full");
+            require(dcaUsers.length + 1 < 5, "dca pool is full");
         }
         _;
     }
 
-    function depositUsdc(uint256 amountIn) public checkPoolIsFUll {
+    function depositUsdc(uint256 amountIn) public virtual checkPoolIsFUll {
         require(amountIn >= 100000000, "minimum deposit is 100 usdc");
         IERC20(usdcSmartContractAddress).transferFrom(msg.sender, address(this), amountIn);
         userAccounts[msg.sender].usdcAmount += amountIn;
@@ -101,9 +113,9 @@ contract StackNDCA {
     }
 
     function dcaAmount(uint256 amountIn) public checkPoolIsFUll {
-        require(userAccounts[msg.sender].usdcAmount>0, "you have ;no monney in dca pool");
-        require(amountIn>10000000, "minimum dca is 10 usdc");
-        require(userAccounts[msg.sender].usdcAmount>=amountIn);
+        require(userAccounts[msg.sender].usdcAmount>0, "you have no monney in dca pool");
+        require(amountIn>=10000000, "minimum dca is 10 usdc");
+        require(userAccounts[msg.sender].usdcAmount>=amountIn, "your dca must be superior than your deposit");
         if (userAccounts[msg.sender].usdcDCA == 0) {
             dcaUsers.push(msg.sender);
         }
@@ -116,6 +128,7 @@ contract StackNDCA {
         uint amountOu = userAccounts[msg.sender].usdcAmount;
         userAccounts[msg.sender].usdcAmount = 0;
         userAccounts[msg.sender].usdcDCA = 0;
+        userAccounts[msg.sender].stackNAmount = 0;
         IERC20(usdcSmartContractAddress).transfer(msg.sender, amountOu);
         emit UserWithdrawUsdc(msg.sender, amountOu);
     }
@@ -131,24 +144,42 @@ contract StackNDCA {
         emit UserWithdrawEth(msg.sender, amountOu);
     }
 
+    function widthdrawStackN() public {
+        require(userAccounts[msg.sender].stackNAmount > 0, "no StackN on your account");
+        uint amountOu = userAccounts[msg.sender].stackNAmount;
+        IERC20(stackNTockenSmartContractAddress).transfer(msg.sender, amountOu);
+        emit UserWithdrawUsdc(msg.sender, amountOu);
+    }
+
     function getDcaValue() private { 
         address[] memory dcaUsersArray = new address[](dcaUsers.length);
         uint dcaUsersArrayIndex = 0;
-        udscDcaValue=0;
+        usdcDcaValue=0;
+        usdcStackValue=0;
         for (uint i = 0; i < dcaUsers.length; i++) {
             address user = dcaUsers[i];
-            if (userAccounts[user].usdcDCA > 0 && userAccounts[user].usdcAmount >= userAccounts[user].usdcDCA) {
-                userAccounts[user].usdcAmount -= userAccounts[user].usdcDCA;
-                udscDcaValue += userAccounts[user].usdcDCA;
-                dcaUsersArray[dcaUsersArrayIndex] = user;
-                dcaUsersArrayIndex++;
-            } else {
-                userAccounts[user].usdcDCA = 0;
+            // compute DCA usdc value
+            if (userAccounts[user].usdcAmount > 0) {
+                if (userAccounts[user].usdcAmount >= userAccounts[user].usdcStackAmount) {
+                    usdcStackValue += userAccounts[user].usdcStackAmount;
+                }
+            }
+            if (userAccounts[user].usdcDCA > 0) {
+                if (userAccounts[user].usdcAmount >= userAccounts[user].usdcDCA) {
+                    userAccounts[user].usdcAmount -= userAccounts[user].usdcDCA;
+                    userAccounts[user].previousMonthUsdcDcaAmount = userAccounts[user].usdcStackAmount;
+                    userAccounts[user].usdcStackAmount = userAccounts[user].usdcAmount;
+                    usdcDcaValue += userAccounts[user].usdcDCA;
+                    dcaUsersArray[dcaUsersArrayIndex] = user;
+                    dcaUsersArrayIndex++;
+                } else {
+                    userAccounts[user].usdcDCA = 0;
+                }
             }
         }
-        require(udscDcaValue>0, "There is no monney to DCA");
+        require(usdcDcaValue>0, "There is no monney to DCA");
 
-        if (udscDcaValue > 0) {
+        if (usdcDcaValue > 0) {
             // Réduire la taille du tableau dcaUsersArray à la taille réelle
             assembly {
                 mstore(dcaUsersArray, dcaUsersArrayIndex)
@@ -156,7 +187,8 @@ contract StackNDCA {
         }
         
         dcaUsers = dcaUsersArray;
-        emit usdcValueToSwap(udscDcaValue);
+        emit usdcValueToSwap(usdcDcaValue);
+        emit usdcValueToStack(usdcStackValue);
     }
 
     function swapExactInputEth(uint256 amountIn) private {
@@ -182,36 +214,64 @@ contract StackNDCA {
     }
 
 
-    function splitWethBalancetoUsers(uint _usdcdcaValue, uint _weth09DcaValue) private {
+    function splitWethBalancetoUsers(uint _usdcDcaValue, uint _usdcStackValue,  uint _weth09DcaValue) private {
+        
+        // add stack to make dca launcher
+        userAccounts[msg.sender].stackNAmount += stackNMonthlyMint * 25 / 100;
+        // for first make DCA or if users are  widthdraw then deposit usdc (in the same month)
+        // they are by definition no usdc stack during the first month, 
+        //then the 75% of stackNMonthlyMint is added to the dca launcher
+        if (_usdcStackValue == 0) {
+            userAccounts[msg.sender].stackNAmount += stackNMonthlyMint * 75 / 100;
+        }
+        
         for (uint i = 0; i < dcaUsers.length; i++) {
             address user = dcaUsers[i];
             if (userAccounts[user].usdcDCA > 0) {
-                uint weth09Amount = _weth09DcaValue * userAccounts[user].usdcDCA / _usdcdcaValue;
+                // weth split
+                uint weth09Amount = _weth09DcaValue * userAccounts[user].usdcDCA / _usdcDcaValue;
                 userAccounts[user].ethAmount += weth09Amount;
+
+                // StackN token split
+                if (_usdcStackValue > 0) {
+                    // StackN token split
+                    uint addStackN = (stackNMonthlyMint * 75 / 100) * userAccounts[user].previousMonthUsdcDcaAmount / _usdcStackValue;
+                    userAccounts[user].stackNAmount += addStackN;
+                    
+
+                }
             }
         }
     }
 
-    function getWethContractBalance() private view returns (uint256) {
-        return IERC20(weth9SmartContractAddress).balanceOf(address(this));
-    }
-
     function makeDCA() public onlyOncePerMinute {
+        require(stackNTockenSmartContractAddress!=address(0), "stackNTockenSmartContractAddress variable is not set");
 
-        // update dcaUsers and udscDcaValue
+        // update dcaUsers and usdcDcaValue
         getDcaValue();
         
         uint weth09DcaValue = getWethContractBalance();
         
         // swap usdc to eth 
-        swapExactInputEth(udscDcaValue);
+        swapExactInputEth(usdcDcaValue);
 
         // recompute weth09 balance to make weth09 distribution
         weth09DcaValue = getWethContractBalance() - weth09DcaValue;
         emit wethValueSwaped(weth09DcaValue);
+
+        // minth 2000 StackNTokent
+        StackNTocken(stackNTockenSmartContractAddress).mintStackN(address(this), 2000000000000000000000);
         
-        // split weth balance to dca users
-        splitWethBalancetoUsers(udscDcaValue, weth09DcaValue);
+        // split weth balance to dca users / mint stackN and split to StackN users
+        splitWethBalancetoUsers(usdcDcaValue, usdcStackValue, weth09DcaValue);
+    }
+
+    function getStackNContractBalance() public view returns (uint256) {
+        return IERC20(stackNTockenSmartContractAddress).balanceOf(address(this));
+    }
+
+    function getWethContractBalance() public view returns (uint256) {
+        return IERC20(weth9SmartContractAddress).balanceOf(address(this));
     }
 
     function getMyUsdcBalance() public view returns (uint) {
@@ -222,8 +282,16 @@ contract StackNDCA {
         return userAccounts[msg.sender].ethAmount;
     }
 
+    function getMyStackNBalance() public view returns (uint) {
+        return userAccounts[msg.sender].stackNAmount;
+    }
+
     function getMyUsdcDca() public view returns (uint) {
         return userAccounts[msg.sender].usdcDCA;
+    }
+
+    function setStackNTockenAddress(address _address) public onlyOwner {
+        stackNTockenSmartContractAddress =_address;
     }
 
     receive() external payable {}
