@@ -1,4 +1,5 @@
 const StackNDCA = artifacts.require("StackNDCA");
+const StackNToken = artifacts.require("StackNToken");
 const ERC20 = artifacts.require("IERC20");
 const {BN, expectRevert, expectEvent, time} = require('@openzeppelin/test-helpers');
 const {expect} = require('chai');
@@ -13,6 +14,7 @@ function timeout(ms) {
 
 contract("StackNDCA", accounts => {
 
+    let StackNTokenInstance;;
     let StackNDCAInstance;
     let usdcInstance;
     let wethInstance;
@@ -21,10 +23,19 @@ contract("StackNDCA", accounts => {
     const clientA = accounts[1];
     const clientB = accounts[2];
     const other = accounts[3];
+    console.log("owner", owner)
+    console.log("clientA", clientA)
+    console.log("clientB", clientB)
+    console.log("other", other)
 
-    describe ("Test all functions", () => {
+    describe ("Test Stack N DCA functions", () => {
         beforeEach(async() => {
+            //StackNDCAInstance = await StackNDCA.new({from: owner});
+            usdcInstance = await ERC20.at(usdcAddress);
             StackNDCAInstance = await StackNDCA.new({from: owner});
+            StackNTokenInstance = await StackNToken.new(StackNDCAInstance.address, {from: owner});
+            StackNDCAInstance.setStackNTockenAddress(StackNTokenInstance.address, {from: owner});
+
         })
 
         it("Client withdraw USDC on empty account", async() => {
@@ -33,6 +44,11 @@ contract("StackNDCA", accounts => {
         });
 
         it("Client withdraw Eth on empty account", async() => {
+            result = StackNDCAInstance.widthdrawEth({from: clientA});
+            await expectRevert(result,"no eth on your account");
+        });
+
+        it("Client withdraw StackN on empty account", async() => {
             result = StackNDCAInstance.widthdrawEth({from: clientA});
             await expectRevert(result,"no eth on your account");
         });
@@ -155,7 +171,7 @@ contract("StackNDCA", accounts => {
             await StackNDCAInstance.dcaAmount(10000000, {from: clientA});
             await StackNDCAInstance.makeDCA({from: clientA});
             result = StackNDCAInstance.makeDCA({from: clientA});
-            await expectRevert(result,"This function can only be called once each minutes");
+            await expectRevert(result, "This function can only be called once each minutes");
         });
 
         it("Launch two makeDCa with month pause", async() => {
