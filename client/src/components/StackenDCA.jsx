@@ -11,41 +11,47 @@ const StackNDCA = () => {
   const [readIntegerFromContract, setIntegerFromContract] = useState("");
   const [readUsdcDcaFromContract, setUsdcDcaFromContract] = useState("");
   const [readEthDcaFromContract, setEthDcaFromContract] = useState("");
+  const [readStackNDcaFromContract, setStackNDcaFromContract] = useState("");
   const [readDcaAmount, setDcaAmount] = useState("");
 
   const usdcMultiplier = 1000000;
   const ethMultiplier = 1000000000000000000;
 
-  // getter config
   const usdcBalance = async () => {
     const value = await contract.methods.getMyUsdcBalance().call({ from: accounts[0] }) / usdcMultiplier;
     setIntegerFromContract(value);
 
 };
 
-    // getter config
     const widthdrawUsdcBalance = async () => {
         const value = await contract.methods.widthdrawUsdc().send({ from: accounts[0] });
       };
 
-// getter config
-const usdcDca = async () => {
+    const usdcDca = async () => {
     const value = await contract.methods.getMyUsdcDca().call({ from: accounts[0] }) / usdcMultiplier;
     setUsdcDcaFromContract(value);
     };
 
-    // getter config
-const ethBalance = async () => {
+    const ethBalance = async () => {
     const value = await contract.methods.getMyEthBalance().call({ from: accounts[0] }) / ethMultiplier;
     setEthDcaFromContract(value);
     };
 
-    // getter config
-const widthdrawEthBalance = async () => {
+
+    const stackNBalance = async () => {
+        const value = await contract.methods.getMyStackNBalance().call({ from: accounts[0] }) / ethMultiplier;
+        setStackNDcaFromContract(value);
+        };
+
+    const widthdrawEthBalance = async () => {
         const value = await contract.methods.widthdrawEth().send({ from: accounts[0] });
         };
 
-    // getter config
+    const widthdrawStackNBalance = async () => {
+    const value = await contract.methods.widthdrawStackN().send({ from: accounts[0] });
+    };
+
+
     const makeDca = async () => {
         const value = await contract.methods.makeDCA().send({ from: accounts[0] });
         };
@@ -246,6 +252,7 @@ const widthdrawEthBalance = async () => {
             const usdcAddress = await contract.methods.usdcSmartContractAddress().call({ from: accounts[0] });
             const  usdcContract  =  new  web3.eth.Contract(erc20abi, usdcAddress);
             const newValue = parseInt(readApproveAmount * usdcMultiplier);
+            console.log("approve", newValue, contract?._address, usdcAddress)
             await usdcContract.methods.approve(contract?._address, newValue).send({ from: accounts[0]});  
         };
 
@@ -266,11 +273,10 @@ const widthdrawEthBalance = async () => {
               return;
             }
             const newValue = parseInt(readDepositUsdcAmount * usdcMultiplier);
+            console.log("deposit", readDepositUsdcAmount, newValue)
             await contract.methods.depositUsdc(newValue).send({ from: accounts[0] });
           };
 
-
-        // Setter config
         const depositHandleInputChange = (e) => {
             if (/^(\d+(\.\d*)?|\.\d+)$|^$/.test(e.target.value)) {
                 setDepositUsdcAmount(e.target.value);
@@ -302,6 +308,7 @@ const widthdrawEthBalance = async () => {
       <h1>Stack N</h1>
       <br />
       <p>You are connected with this address: {accounts}</p>
+      <p>Stack N smart contract : {contract?._address}</p>
       <br />
       
       <h2>How to make your Dollar Cost Average ?</h2>
@@ -362,6 +369,11 @@ const widthdrawEthBalance = async () => {
         <button onClick={ethBalance}>my eth balance</button>
         {readEthDcaFromContract}
         </div>
+
+        <div>
+        <button onClick={stackNBalance}>my stackN balance</button>
+        {readStackNDcaFromContract}
+        </div>
         
         <div>
         <button onClick={usdcDca}>my monthly dca</button>
@@ -377,7 +389,10 @@ const widthdrawEthBalance = async () => {
         <div>
         <button onClick={widthdrawEthBalance}>widthdraw eth</button>
         </div>
-        
+
+        <div>
+        <button onClick={widthdrawStackNBalance}>widthdraw StackN</button>
+        </div>        
 
     </div>
   );
