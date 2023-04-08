@@ -167,8 +167,8 @@ contract("StackNDCA", accounts => {
             await StackNDCAInstance.depositUsdc(100000000, {from: clientA});
             await StackNDCAInstance.dcaAmount(10000000, {from: clientA});
             await StackNDCAInstance.makeDCA({from: clientA});
-            await StackNDCAInstance.widthdrawStackN({from: clientA});
             stackNBalance = await StackNDCAInstance.getMyStackNBalance({from: clientA});
+            await StackNDCAInstance.widthdrawStackN({from: clientA});
             result = await StackNTokenInstance.balanceOf(clientA);
             expect(result).to.be.bignumber.equal(BN(stackNBalance));
         });
