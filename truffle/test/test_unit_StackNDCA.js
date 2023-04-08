@@ -30,7 +30,6 @@ contract("StackNDCA", accounts => {
 
     describe ("Test Stack N DCA functions", () => {
         beforeEach(async() => {
-            //StackNDCAInstance = await StackNDCA.new({from: owner});
             usdcInstance = await ERC20.at(usdcAddress);
             StackNDCAInstance = await StackNDCA.new({from: owner});
             StackNTokenInstance = await StackNToken.new(StackNDCAInstance.address, {from: owner});
@@ -60,7 +59,6 @@ contract("StackNDCA", accounts => {
         });
 
         it("Client A make a deposit under deposit the limit ", async() => {
-            usdcInstance = await ERC20.at(usdcAddress);
             await usdcInstance.approve(StackNDCAInstance.address, 99999999, { from: clientA });
             result = StackNDCAInstance.depositUsdc(99999999, {from: clientA});
             await expectRevert(result,"minimum deposit is 100 usdc");
@@ -68,7 +66,6 @@ contract("StackNDCA", accounts => {
 
 
         it("Client A make a deposit check account balance", async() => {
-            usdcInstance = await ERC20.at(usdcAddress);
             await usdcInstance.approve(StackNDCAInstance.address, 100000000, { from: clientA });
             await StackNDCAInstance.depositUsdc(100000000, {from: clientA});
             result =  await StackNDCAInstance.getMyUsdcBalance({from: clientA});
@@ -77,7 +74,6 @@ contract("StackNDCA", accounts => {
 
 
         it("Client A make a deposit  check event", async() => {
-            usdcInstance = await ERC20.at(usdcAddress);
             await usdcInstance.approve(StackNDCAInstance.address, 100000000, { from: clientA });
             result = await StackNDCAInstance.depositUsdc(100000000, {from: clientA});
             expectEvent(result, 'UserDepositUsdc', {user: clientA , amount: BN(100000000)});
@@ -89,7 +85,6 @@ contract("StackNDCA", accounts => {
         });
 
         it("Client A make a deposit and try to define DCA Amout under the limit", async() => {
-            usdcInstance = await ERC20.at(usdcAddress);
             await usdcInstance.approve(StackNDCAInstance.address, 100000000, { from: clientA });
             await StackNDCAInstance.depositUsdc(100000000, {from: clientA})
             result = StackNDCAInstance.dcaAmount(9999999, {from: clientA});
@@ -97,7 +92,6 @@ contract("StackNDCA", accounts => {
         });
 
         it("Client A make a deposit and try to define DCA Amout superior thant deposit", async() => {
-            usdcInstance = await ERC20.at(usdcAddress);
             await usdcInstance.approve(StackNDCAInstance.address, 100000000, { from: clientA });
             await StackNDCAInstance.depositUsdc(100000000, {from: clientA})
             result = StackNDCAInstance.dcaAmount(100000001, {from: clientA});
@@ -105,7 +99,6 @@ contract("StackNDCA", accounts => {
         });
 
         it("Client A make a deposit and define DCA Amout at the limit check event", async() => {
-            usdcInstance = await ERC20.at(usdcAddress);
             await usdcInstance.approve(StackNDCAInstance.address, 100000000, { from: clientA });
             await StackNDCAInstance.depositUsdc(100000000, {from: clientA});
             result = await StackNDCAInstance.dcaAmount(10000000, {from: clientA});
@@ -113,7 +106,6 @@ contract("StackNDCA", accounts => {
         });
 
         it("Client A make a deposit and define DCA Amout at the limit check balance", async() => {
-            usdcInstance = await ERC20.at(usdcAddress);
             await usdcInstance.approve(StackNDCAInstance.address, 100000000, { from: clientA });
             await StackNDCAInstance.depositUsdc(100000000, {from: clientA});
             await StackNDCAInstance.dcaAmount(10000000, {from: clientA});
@@ -122,7 +114,6 @@ contract("StackNDCA", accounts => {
         });
 
         it("Launch first DCA verify usdc swap amount", async() => {
-            usdcInstance = await ERC20.at(usdcAddress);
             await usdcInstance.approve(StackNDCAInstance.address, 100000000, { from: clientA });
             await StackNDCAInstance.depositUsdc(100000000, {from: clientA});
             await StackNDCAInstance.dcaAmount(10000000, {from: clientA});
@@ -131,7 +122,6 @@ contract("StackNDCA", accounts => {
         });
 
         it("Launch first DCA verify eth swaped amount", async() => {
-            usdcInstance = await ERC20.at(usdcAddress);
             await usdcInstance.approve(StackNDCAInstance.address, 100000000, { from: clientA });
             await StackNDCAInstance.depositUsdc(100000000, {from: clientA});
             await StackNDCAInstance.dcaAmount(10000000, {from: clientA});
@@ -142,30 +132,48 @@ contract("StackNDCA", accounts => {
         });
 
         it("Launch first DCA verify contract weth balance == client A weth account", async() => {
-            usdcInstance = await ERC20.at(usdcAddress);
             await usdcInstance.approve(StackNDCAInstance.address, 100000000, { from: clientA });
             await StackNDCAInstance.depositUsdc(100000000, {from: clientA});
             await StackNDCAInstance.dcaAmount(10000000, {from: clientA});
             await StackNDCAInstance.makeDCA({from: clientA});
             result = await StackNDCAInstance.getMyEthBalance({from: clientA});
             wethInstance = await ERC20.at(wethAddress);
-            wethbalance = await wethInstance.balanceOf(StackNDCAInstance.address);
-            expect(result).to.be.bignumber.equal(BN(wethbalance));
+            wethBalance = await wethInstance.balanceOf(StackNDCAInstance.address);
+            expect(result).to.be.bignumber.equal(BN(wethBalance));
         });
 
         it("Launch first DCA and withdraw ETH", async() => {
-            usdcInstance = await ERC20.at(usdcAddress);
             await usdcInstance.approve(StackNDCAInstance.address, 100000000, { from: clientA });
             await StackNDCAInstance.depositUsdc(100000000, {from: clientA});
             await StackNDCAInstance.dcaAmount(10000000, {from: clientA});
             await StackNDCAInstance.makeDCA({from: clientA});
-            wethbalance = await StackNDCAInstance.getMyEthBalance({from: clientA});
+            wethBalance = await StackNDCAInstance.getMyEthBalance({from: clientA});
             result =  await StackNDCAInstance.widthdrawEth({from: clientA});
-            expectEvent(result, 'UserWithdrawEth', {user: clientA, amount: BN(wethbalance)});
+            expectEvent(result, 'UserWithdrawEth', {user: clientA, amount: BN(wethBalance)});
+        });
+
+        it("Launch first DCA and withdraw StackN check event", async() => {
+            await usdcInstance.approve(StackNDCAInstance.address, 100000000, { from: clientA });
+            await StackNDCAInstance.depositUsdc(100000000, {from: clientA});
+            await StackNDCAInstance.dcaAmount(10000000, {from: clientA});
+            await StackNDCAInstance.makeDCA({from: clientA});
+            stackNBalance = await StackNDCAInstance.getMyStackNBalance({from: clientA});
+            result =  await StackNDCAInstance.widthdrawStackN({from: clientA});
+            expectEvent(result, 'UserWithdrawStackN', {user: clientA, amount: BN(stackNBalance)});
+        });
+
+        it("Launch first DCA and withdraw StackN check balance", async() => {
+            await usdcInstance.approve(StackNDCAInstance.address, 100000000, { from: clientA });
+            await StackNDCAInstance.depositUsdc(100000000, {from: clientA});
+            await StackNDCAInstance.dcaAmount(10000000, {from: clientA});
+            await StackNDCAInstance.makeDCA({from: clientA});
+            await StackNDCAInstance.widthdrawStackN({from: clientA});
+            stackNBalance = await StackNDCAInstance.getMyStackNBalance({from: clientA});
+            result = await StackNTokenInstance.balanceOf(clientA);
+            expect(result).to.be.bignumber.equal(BN(stackNBalance));
         });
 
         it("Launch two makeDCa without month pause", async() => {
-            usdcInstance = await ERC20.at(usdcAddress);
             await usdcInstance.approve(StackNDCAInstance.address, 100000000, { from: clientA });
             await StackNDCAInstance.depositUsdc(100000000, {from: clientA});
             await StackNDCAInstance.dcaAmount(10000000, {from: clientA});
@@ -175,7 +183,6 @@ contract("StackNDCA", accounts => {
         });
 
         it("Launch two makeDCa with month pause", async() => {
-            usdcInstance = await ERC20.at(usdcAddress);
             await usdcInstance.approve(StackNDCAInstance.address, 100000000, { from: clientA });
             await StackNDCAInstance.depositUsdc(100000000, {from: clientA});
             await StackNDCAInstance.dcaAmount(10000000, {from: clientA});

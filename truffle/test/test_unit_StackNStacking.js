@@ -107,8 +107,6 @@ contract("StackNDCA", accounts => {
             // second month DCA
             await time.increase(time.duration.minutes(2));
             result = await StackNDCAInstance.makeDCA({from: clientB});
-            // stackAdd(user, addStackN, userAccounts[user].usdcStackAmount, _usdcStackValue);
-            // expectEvent(result, 'stackAdd', {user: clientA, addStackN: BN("1500000000000000000000"), usdcStackAmount: BN(90000000), usdcStackValue: BN(90000000)});
 
             // test client A StackN balance
             result = await StackNDCAInstance.getMyStackNBalance({from: clientA});
@@ -134,8 +132,6 @@ contract("StackNDCA", accounts => {
             // second month DCA
             await time.increase(time.duration.minutes(2));
             result = await StackNDCAInstance.makeDCA({from: clientB});
-            // stackAdd(user, addStackN, userAccounts[user].usdcStackAmount, _usdcStackValue);
-            // expectEvent(result, 'stackAdd', {user: clientA, addStackN: BN("1500000000000000000000"), usdcStackAmount: BN(90000000), usdcStackValue: BN(90000000)});
 
             // test client A StackN balance
             result = await StackNDCAInstance.getMyStackNBalance({from: clientB});
