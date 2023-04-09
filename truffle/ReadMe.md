@@ -18,10 +18,9 @@ This repository contains the smart contract for the My DCA (Dollar Cost Averagin
 The My DCA Smart Contract includes the following features:
 
 1. Deposit USDC
-2. Set up a DCA plan for ETH or STKN
+2. Set up a DCA plan for ETH 
 3. Withdraw ETH, STKN, or USDC
 4. Get balances and DCA plan information
-5. Modifiers to ensure proper access control and execution constraints
 
 ## Installation
 

@@ -216,5 +216,31 @@ contract("StackNDCA", accounts => {
             result = await StackNDCAInstance.getMyStackNBalance({from: other});
             expect(result).to.be.bignumber.equal(BN("500000000000000000000"));
         });
+
+        it("Launch 3 DCA with 1 user without enough to make dca", async() => {
+            usdcInstance = await ERC20.at(usdcAddress);
+            // client A deposit
+            await usdcInstance.approve(StackNDCAInstance.address, 100000000, { from: clientA });
+            await StackNDCAInstance.depositUsdc(100000000, {from: clientA});
+            await StackNDCAInstance.dcaAmount(10000000, {from: clientA});
+
+            // first month DCA
+            await StackNDCAInstance.makeDCA({from: clientA});
+
+            // client B deposit
+            await usdcInstance.approve(StackNDCAInstance.address, 100000000, { from: clientB });
+            await StackNDCAInstance.depositUsdc(100000000, {from: clientB});
+            await StackNDCAInstance.dcaAmount(75000000, {from: clientB});
+        
+            // second month DCA
+            await time.increase(time.duration.days(31));
+            await StackNDCAInstance.makeDCA({from: clientB});
+
+            // third month DCA
+            await time.increase(time.duration.days(31));
+            result = await StackNDCAInstance.makeDCA({from: other});
+            result = await StackNDCAInstance.getMyStackNBalance({from: clientB});
+            expect(result).to.be.bignumber.equal(BN("500000000000000000000"));
+        });
     });
 });

@@ -30,7 +30,8 @@ function EthProvider({ children }) {
   useEffect(() => {
     const tryInit = async () => {
       try {
-        const artifact = require("../../contracts/StackNDCA.json");
+        //const artifact = require("../../contracts/StackNDCA.json");
+        const artifact = require("../../contracts/StackNDCAMinute.json");
         init(artifact);
       } catch (err) {
         console.error(err);

@@ -292,7 +292,7 @@ contract StackNDCA is Ownable {
     }
 
     // @notice Executes the Dollar-Cost Averaging (DCA) process for all eligible users
-    // @dev This function can only be called once per minute
+    // @dev This function can only be called once per month
     // @dev Make sure the stackNTockenSmartContractAddress is set before calling this function
     function makeDCA() public onlyOncePerMonth {
         require(stackNTockenSmartContractAddress!=address(0), "stackNTockenSmartContractAddress variable is not set");

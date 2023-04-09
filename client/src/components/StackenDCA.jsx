@@ -322,7 +322,7 @@ const StackNDCA = () => {
                 onChange={approveHandleInputChange}
             />
             </label>
-            <button onClick={sendApprove}>send</button>
+            <button onClick={sendApprove}>approve</button> (minimum 100 usdc)
             </div>
         <p>2. Deposit your USDC to the contract</p>
             <div>
@@ -334,7 +334,7 @@ const StackNDCA = () => {
                 onChange={depositHandleInputChange}
             />
             </label>
-            <button onClick={depositUsdc}>send usdc</button>
+            <button onClick={depositUsdc}>send usdc</button> (minimum 100 usdc)
             </div>
         <p>3. Set your monthly DCA</p>
             <div>
@@ -346,14 +346,15 @@ const StackNDCA = () => {
                 onChange={handleInputChange}
             />
             </label>
-            <button onClick={sendDcaAmount}>monthly usdc DCA</button>
+            <button onClick={sendDcaAmount}>monthly usdc DCA</button> (minimum 10 usdc)
             </div>
         <p>4. Wait for the next month</p>
 
     <h2>Launch Dollar Cost Average</h2>
       <div>
-        <p>Launch every month DCA (for all StackN Dca users) and win 500 StackN tokens</p>
-        <p>each user shares 1500 StackN token as rewards each month according to his deposit in usdc on the smart contract</p>
+        <p>Every month 2,000 tokens are distributed to StackN DCA users.</p>
+        <p>- 500 StackN tokens for the "make dca" launcher</p>
+        <p>- 1500 StackN token as rewards each month according to his deposit in usdc on the smart contract</p>
         <br/>
         <button onClick={makeDca}>make dca</button>
         <br/>
