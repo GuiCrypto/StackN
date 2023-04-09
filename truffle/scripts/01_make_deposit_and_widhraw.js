@@ -592,17 +592,21 @@ async function makeDepositAndwidthdraw() {
     accountAddress = accounts[0];
     console.log('using address', accountAddress);
 
-    stackNAddress = "0xB5c08AA488aE7f3febF04b8915b63709D66Fd4db"
-    var  stackNContract  =  new  web3.eth.Contract(stackNabi, stackNAddress);
-    stackNContract.methods.getMyUsdcBalance().call().then(console.log);
-    
+    var stackNAddress = "0x812d2dDa24C7a390932501CB4369ADbc3731AfC9"
     var  addrUsdc  =  "0x07865c6E87B9F70255377e024ace6630C1Eaa37F";
+    var  stackNContract  =  new  web3.eth.Contract(stackNabi, stackNAddress);
     var  erc20Contract  =  new  web3.eth.Contract(erc20Abi, addrUsdc);
-    await erc20Contract.methods.approve(stackNAddress, 10000000000).send({ from: accountAddress});
-    erc20Contract.methods.allowance(accountAddress, stackNAddress).call().then(console.log);  
-    await stackNContract.methods.depositUsdc(1000000000).send({ from: accountAddress});
-    stackNContract.methods.getMyUsdcBalance().call().then(console.log);
 
+    // // get balance on StackN smart contract
+    // stackNContract.methods.getMyUsdcBalance().call().then(console.log);
+    // make approve
+    await erc20Contract.methods.approve(stackNAddress, 10000000000).send({ from: accountAddress});
+    // verify allowance
+    erc20Contract.methods.allowance(accountAddress, stackNAddress).call().then(console.log);  
+    // deposit
+    await stackNContract.methods.depositUsdc(1000000000).send({ from: accountAddress});
+    // widthdraw
+    await stackNContract.methods.widthdrawUsdc().send({ from: accountAddress});
 }
 
 makeDepositAndwidthdraw();
