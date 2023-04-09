@@ -48,7 +48,7 @@ interface StackNTocken {
     function mintStackN(address _account, uint _amount) external;
 }
 
-contract StackNDCA is Ownable {
+contract StackNDCAMinute is Ownable {
     ISwapRouter constant swapRouter = ISwapRouter(0xE592427A0AEce92De3Edee1F18E0157C05861564);
 
     address public usdcSmartContractAddress=0x07865c6E87B9F70255377e024ace6630C1Eaa37F;  //goerli
@@ -96,17 +96,6 @@ contract StackNDCA is Ownable {
     modifier onlyOncePerMinute() {
         uint nowTimestamp = block.timestamp;
         require(BokkyPooBahsDateTimeLibrary.diffMinutes(lastExecutionTime, nowTimestamp) >= 1, "This function can only be called once each minutes");
-        lastExecutionTime = nowTimestamp;
-        _;
-    }
-
-    // @notice Modifier to ensure that a function is executed only once per month
-    // @dev Use this modifier to restrict functions or actions that should be allowed 
-    // @dev to execute only once per month. This modifier should be placed before the 
-    // @dev function or action that requires the check.
-    modifier onlyOncePerMonth() {
-        uint nowTimestamp = block.timestamp;
-        require(BokkyPooBahsDateTimeLibrary.diffMonths(lastExecutionTime, nowTimestamp) >= 1, "This function can only be called once each month");
         lastExecutionTime = nowTimestamp;
         _;
     }

@@ -197,8 +197,7 @@ async function approve() {
         }
     ]
 
-     var  addrUsdc  =  "0x07865c6E87B9F70255377e024ace6630C1Eaa37F";
-
+    var  addrUsdc  =  "0x07865c6E87B9F70255377e024ace6630C1Eaa37F";
     var  addrContractToGiveApprove = "0xB5c08AA488aE7f3febF04b8915b63709D66Fd4db";
     var  Contract  =  new  web3.eth.Contract(erc20Abi, addrUsdc);
     

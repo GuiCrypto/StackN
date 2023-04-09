@@ -53,7 +53,7 @@ contract("StackNDCA", accounts => {
             await StackNDCAInstance.depositUsdc(100000000, {from: clientA});
             await StackNDCAInstance.dcaAmount(10000000, {from: clientA});
             await StackNDCAInstance.makeDCA({from: clientA});
-            await time.increase(time.duration.minutes(2));
+            await time.increase(time.duration.days(31));
             result = await StackNDCAInstance.makeDCA({from: clientA});
             expectEvent(result, 'usdcValueToStack', {usdcValue: BN(90000000)});
 
@@ -65,7 +65,7 @@ contract("StackNDCA", accounts => {
             await StackNDCAInstance.depositUsdc(100000000, {from: clientA});
             await StackNDCAInstance.dcaAmount(10000000, {from: clientA});
             await StackNDCAInstance.makeDCA({from: clientA});
-            await time.increase(time.duration.minutes(2));
+            await time.increase(time.duration.days(31));
             result = await StackNDCAInstance.makeDCA({from: clientA});
             expectEvent(result, 'usdcValueToStack', {usdcValue: BN(90000000)});
 
@@ -105,7 +105,7 @@ contract("StackNDCA", accounts => {
             await StackNDCAInstance.dcaAmount(50000000, {from: clientB});
         
             // second month DCA
-            await time.increase(time.duration.minutes(2));
+            await time.increase(time.duration.days(31));
             result = await StackNDCAInstance.makeDCA({from: clientB});
 
             // test client A StackN balance
@@ -130,7 +130,7 @@ contract("StackNDCA", accounts => {
             await StackNDCAInstance.dcaAmount(50000000, {from: clientB});
         
             // second month DCA
-            await time.increase(time.duration.minutes(2));
+            await time.increase(time.duration.days(31));
             result = await StackNDCAInstance.makeDCA({from: clientB});
 
             // test client A StackN balance
@@ -155,11 +155,11 @@ contract("StackNDCA", accounts => {
             await StackNDCAInstance.dcaAmount(50000000, {from: clientB});
         
             // second month DCA
-            await time.increase(time.duration.minutes(2));
+            await time.increase(time.duration.days(31));
             await StackNDCAInstance.makeDCA({from: clientB});
 
             // third month DCA
-            await time.increase(time.duration.minutes(2));
+            await time.increase(time.duration.days(31));
             await StackNDCAInstance.makeDCA({from: other});
             result = await StackNDCAInstance.getMyStackNBalance({from: clientA});
             expect(result).to.be.bignumber.equal(BN("4423076923076923076923"));
@@ -181,11 +181,11 @@ contract("StackNDCA", accounts => {
             await StackNDCAInstance.dcaAmount(50000000, {from: clientB});
         
             // second month DCA
-            await time.increase(time.duration.minutes(2));
+            await time.increase(time.duration.days(31));
             await StackNDCAInstance.makeDCA({from: clientB});
 
             // third month DCA
-            await time.increase(time.duration.minutes(2));
+            await time.increase(time.duration.days(31));
             await StackNDCAInstance.makeDCA({from: other});
             result = await StackNDCAInstance.getMyStackNBalance({from: clientB});
             expect(result).to.be.bignumber.equal(BN("1076923076923076923076"));
@@ -207,11 +207,11 @@ contract("StackNDCA", accounts => {
             await StackNDCAInstance.dcaAmount(50000000, {from: clientB});
         
             // second month DCA
-            await time.increase(time.duration.minutes(2));
+            await time.increase(time.duration.days(31));
             await StackNDCAInstance.makeDCA({from: clientB});
 
             // third month DCA
-            await time.increase(time.duration.minutes(2));
+            await time.increase(time.duration.days(31));
             await StackNDCAInstance.makeDCA({from: other});
             result = await StackNDCAInstance.getMyStackNBalance({from: other});
             expect(result).to.be.bignumber.equal(BN("500000000000000000000"));

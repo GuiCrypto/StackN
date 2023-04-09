@@ -179,7 +179,7 @@ contract("StackNDCA", accounts => {
             await StackNDCAInstance.dcaAmount(10000000, {from: clientA});
             await StackNDCAInstance.makeDCA({from: clientA});
             result = StackNDCAInstance.makeDCA({from: clientA});
-            await expectRevert(result, "This function can only be called once each minutes");
+            await expectRevert(result, "This function can only be called once each month");
         });
 
         it("Launch two makeDCa with month pause", async() => {
@@ -187,7 +187,7 @@ contract("StackNDCA", accounts => {
             await StackNDCAInstance.depositUsdc(100000000, {from: clientA});
             await StackNDCAInstance.dcaAmount(10000000, {from: clientA});
             await StackNDCAInstance.makeDCA({from: clientA});
-            await time.increase(time.duration.minutes(2));
+            await time.increase(time.duration.days(31));
             await StackNDCAInstance.makeDCA({from: clientA});
             result = await StackNDCAInstance.getMyUsdcBalance({from: clientA});
             expect(result).to.be.bignumber.equal(BN(80000000));

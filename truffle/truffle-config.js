@@ -50,15 +50,6 @@ module.exports = {
       timeoutBlocks: 200,  // # of blocks before a deployment times out  (minimum/default: 50)
       skipDryRun: true     // Skip dry run before migrations? (default: false for public nets )
     },
-
-//    goerli: {
-//      provider: () =>
-//        new HDWalletProvider(
-//          MNEMONIC,
-//          `https://goerli.infura.io/v3/${INFURA_ID}`
-//        ),
-//      network_id: 5,
-//    },
     sepolia: {
       provider: () =>
         new HDWalletProvider(
@@ -85,14 +76,14 @@ module.exports = {
   },
 
   // Set default mocha options here, use special reporters, etc.
-  mocha: {
-    reporter: 'eth-gas-reporter',
-    reporterOptions : {
-      currency: 'USD',
-      gasPrice: 1,
-      showTimeSpent: true,
-    }
-  },
+  // mocha: {
+  //   reporter: 'eth-gas-reporter',
+  //   reporterOptions : {
+  //     currency: 'USD',
+  //     gasPrice: 1,
+  //     showTimeSpent: true,
+  //   }
+  // },
 
   // Configure your compilers
   compilers: {

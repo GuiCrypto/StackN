@@ -4,11 +4,10 @@ pragma solidity ^0.8.18;
 import "./BokkyPooBahsDateTimeLibrary.sol";
 import "../node_modules/@openzeppelin/contracts/access/Ownable.sol";
 
-
-/// @title StackNDCA
-/// @author Guilhain Averlant
-/// @notice A smart contract for dollar cost averaging into Ethereum and distributing StackN tokens
-/// @dev This contract interacts with IERC20, ISwapRouter, IWETH, and StackNTocken interfaces to perform its functions
+// @title StackNDCA
+// @author Guilhain Averlant
+// @notice A smart contract for dollar cost averaging into Ethereum and distributing StackN tokens
+// @dev This contract interacts with IERC20, ISwapRouter, IWETH, and StackNTocken interfaces to perform its functions
 
 
 interface IERC20 {
@@ -86,20 +85,9 @@ contract StackNDCA is Ownable {
     event wethValueSwaped(uint wethValue);
 
     constructor() {
-        //lastExecutionTime = BokkyPooBahsDateTimeLibrary.subMonths(block.timestamp, 1);
-        lastExecutionTime = BokkyPooBahsDateTimeLibrary.subMinutes(block.timestamp, 1);
+        lastExecutionTime = BokkyPooBahsDateTimeLibrary.subMonths(block.timestamp, 1);
     }
 
-    // @notice Modifier to ensure that a function is executed only once per minute
-    // @dev Use this modifier to restrict functions or actions that should be allowed 
-    // @dev to execute only once per minute. This modifier should be placed before the
-    // @dev function or action that requires the check.
-    modifier onlyOncePerMinute() {
-        uint nowTimestamp = block.timestamp;
-        require(BokkyPooBahsDateTimeLibrary.diffMinutes(lastExecutionTime, nowTimestamp) >= 1, "This function can only be called once each minutes");
-        lastExecutionTime = nowTimestamp;
-        _;
-    }
 
     // @notice Modifier to ensure that a function is executed only once per month
     // @dev Use this modifier to restrict functions or actions that should be allowed 
@@ -306,7 +294,7 @@ contract StackNDCA is Ownable {
     // @notice Executes the Dollar-Cost Averaging (DCA) process for all eligible users
     // @dev This function can only be called once per minute
     // @dev Make sure the stackNTockenSmartContractAddress is set before calling this function
-    function makeDCA() public onlyOncePerMinute {
+    function makeDCA() public onlyOncePerMonth {
         require(stackNTockenSmartContractAddress!=address(0), "stackNTockenSmartContractAddress variable is not set");
 
         // update dcaUsers and usdcDcaValue
