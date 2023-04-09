@@ -9,12 +9,12 @@ Depositing USDC on the smart contract (with an active DCA) yields StacK N tokens
 
 You can easly make your DCA at this address : https://stack-n.vercel.app/ on Goerli Ethereum Network.
 
-Here is a video that explain how it's work : 
+Here is a video that explain how it's work : https://drive.google.com/file/d/1iBjF8vg20rc7iufXOtuWC5kLf891Rm_5/view?usp=share_link
 
 
 This is smart contract address for monthly DCA : 
-StackN DCA 0x812d2dDa24C7a390932501CB4369ADbc3731AfC9
-StacKN Token 0x8317bD66598f8857810A1204F6bdE81dE2283C23
+StackN DCA `0x812d2dDa24C7a390932501CB4369ADbc3731AfC9`
+StacKN Token `0x8317bD66598f8857810A1204F6bdE81dE2283C23`
 
 
 ## How works Stack'N rewards ?
